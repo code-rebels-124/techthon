@@ -1,13 +1,13 @@
-import { cn } from '../../utils/cn'
+import { cn } from "../../lib/utils";
 
 export function Input({ className, ...props }) {
   return (
     <input
       className={cn(
-        'flex h-11 w-full rounded-full border border-white/70 bg-white/70 px-4 py-2 text-sm outline-none placeholder:text-muted-foreground/70 focus:border-primary/40 dark:border-white/10 dark:bg-white/5',
+        "glass-panel h-11 w-full rounded-2xl border-0 px-4 text-sm text-strong placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400",
         className,
       )}
       {...props}
     />
-  )
+  );
 }

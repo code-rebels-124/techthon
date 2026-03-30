@@ -1,105 +1,122 @@
-import { BrainCircuit, Sparkles, TrendingUp } from 'lucide-react'
-import { Badge } from '../components/ui/badge'
-import { Button } from '../components/ui/button'
-import { Card, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
+import { ArrowRight, ShieldCheck, TrendingUp, TriangleAlert } from "lucide-react";
+import { useOutletContext } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
+import { getDemandSignalCards } from "../utils/blood-logic";
 
-export function InsightsPage({ predictions = [], suggestions = [] }) {
+const signalMeta = {
+  warning: {
+    icon: TriangleAlert,
+    card: "from-rose-500 to-red-500",
+    badge: "bg-rose-500/15 text-rose-600 dark:text-rose-300",
+  },
+  up: {
+    icon: TrendingUp,
+    card: "from-amber-500 to-orange-500",
+    badge: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  },
+  stable: {
+    icon: ShieldCheck,
+    card: "from-emerald-500 to-green-500",
+    badge: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  },
+};
+
+export function InsightsPage() {
+  const { dashboardData, isLoading } = useOutletContext();
+  const insights = dashboardData?.insights ?? [];
+  const demandCards = getDemandSignalCards(dashboardData?.demandSignals ?? { "O-": "rising", "B+": "rising", "A+": "stable" });
+
   return (
-    <div className="space-y-6">
-      <Card className="overflow-hidden bg-gradient-to-br from-slate-900 via-rose-950 to-red-900 text-white dark:border-white/10">
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">
-              <BrainCircuit className="size-4" />
-              AI Insights
-            </div>
-            <h2 className="mt-4 text-3xl font-semibold">Demand prediction and smart redistribution</h2>
-            <p className="mt-3 max-w-2xl text-rose-100/85">
-              Forecasts are powered by rolling demand averages and network availability patterns to help teams
-              act before a shortage becomes an emergency.
-            </p>
-          </div>
-          <Button variant="secondary" className="bg-white text-slate-900 hover:bg-rose-50">
-            <Sparkles className="size-4" />
-            Generate executive summary
-          </Button>
-        </div>
-      </Card>
+    <div className="space-y-4">
+      <div className="grid gap-4 xl:grid-cols-3">
+        {demandCards.map((card, index) => {
+          const meta = signalMeta[card.tone];
+          const Icon = meta.icon;
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr_1fr]">
-        <Card>
-          <CardHeader>
-            <div>
-              <CardDescription>Predictions</CardDescription>
-              <CardTitle className="mt-2">Next 24 hour outlook</CardTitle>
-            </div>
-          </CardHeader>
-          <div className="space-y-4">
-            {predictions.map((prediction, index) => (
-              <div
-                key={prediction.id}
-                className="rounded-[24px] border border-white/70 bg-white/70 p-5 dark:border-white/10 dark:bg-white/5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-semibold">{prediction.title}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{prediction.summary}</p>
+          return (
+            <motion.div
+              key={card.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.06 }}
+            >
+              <Card className="overflow-hidden">
+                <CardContent className="relative p-6">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${meta.card} opacity-95`} />
+                  <div className="relative text-white">
+                    <div className="flex items-center justify-between gap-3">
+                      <Icon className="h-5 w-5" />
+                      <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
+                        {card.status}
+                      </span>
+                    </div>
+                    <p className="mt-10 font-display text-2xl font-bold">{card.title}</p>
                   </div>
-                  <Badge variant={index === 0 ? 'critical' : 'info'}>{prediction.confidence}%</Badge>
-                </div>
-                <div className="mt-4 flex items-center justify-between text-sm">
-                  <span className="inline-flex items-center gap-2 text-muted-foreground">
-                    <TrendingUp className="size-4" />
-                    Impact {prediction.impact}
-                  </span>
-                  {index === 0 ? (
-                    <span className="font-semibold text-rose-600 dark:text-rose-300">Recommended Action</span>
-                  ) : null}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </div>
 
+      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
           <CardHeader>
-            <div>
-              <CardDescription>Redistribution playbook</CardDescription>
-              <CardTitle className="mt-2">Suggested transfers</CardTitle>
-            </div>
+            <CardTitle>AI insights and demand prediction</CardTitle>
+            <CardDescription>Mock trend analysis based on historical movement and reserve pressure.</CardDescription>
           </CardHeader>
-          <div className="space-y-4">
-            {suggestions.map((suggestion, index) => (
-              <div
-                key={suggestion.id}
-                className={`rounded-[24px] p-5 ${
-                  index === 0
-                    ? 'bg-gradient-to-br from-rose-500 to-red-500 text-white'
-                    : 'border border-white/70 bg-white/70 dark:border-white/10 dark:bg-white/5'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-lg font-semibold">
-                    {suggestion.transferUnits} units · {suggestion.bloodGroup}
-                  </p>
-                  <Badge variant={index === 0 ? 'safe' : 'info'}>{suggestion.priority}</Badge>
-                </div>
-                <p className={`mt-3 text-sm ${index === 0 ? 'text-rose-50/90' : 'text-muted-foreground'}`}>
-                  Transfer from {suggestion.donorHospital} to {suggestion.receiverHospital}.
-                </p>
-                <div
-                  className={`mt-4 flex items-center justify-between text-sm ${
-                    index === 0 ? 'text-rose-50' : 'text-muted-foreground'
-                  }`}
-                >
-                  <span>ETA {suggestion.eta}</span>
-                  <span>{index === 0 ? 'Highest priority route' : 'Ready to dispatch'}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <CardContent className="space-y-4">
+            {isLoading
+              ? Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-28 animate-pulse rounded-[24px] bg-rose-100/60 dark:bg-white/8" />)
+              : insights.map((insight, index) => (
+                  <motion.div
+                    key={insight.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.06 }}
+                    className="rounded-[28px] bg-white/60 p-5 transition hover:-translate-y-1 hover:bg-white/85 dark:bg-white/6 dark:hover:bg-white/10"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-display text-xl font-bold text-strong">{insight.title}</p>
+                      <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-300">
+                        {insight.confidence}% confidence
+                      </Badge>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-muted">{insight.description}</p>
+                    <div className="mt-4 rounded-[22px] bg-gradient-to-r from-rose-500 to-red-500 p-4 text-white">
+                      <p className="text-xs uppercase tracking-[0.22em] text-white/75">Recommended action</p>
+                      <p className="mt-2 font-semibold">{insight.recommendedAction}</p>
+                    </div>
+                  </motion.div>
+                ))}
+          </CardContent>
         </Card>
+
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Transfer guidance</CardTitle>
+              <CardDescription>Actionable redistribution suggestions generated from shortage and surplus signals.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(dashboardData?.redistribution ?? []).map((item) => (
+                <div key={item.id} className="rounded-[24px] bg-white/60 p-4 dark:bg-white/6">
+                  <p className="text-xs uppercase tracking-[0.22em] text-rose-500">Recommended action</p>
+                  <p className="mt-2 text-sm font-semibold text-strong">{item.group} balancing route</p>
+                  <div className="mt-3 flex items-center gap-2 text-sm text-muted">
+                    <span>{item.from}</span>
+                    <ArrowRight className="h-4 w-4 text-rose-500" />
+                    <span>{item.to}</span>
+                  </div>
+                  <p className="mt-3 text-sm text-muted">{item.units} units • {item.timeline}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
-  )
+  );
 }

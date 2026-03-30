@@ -1,147 +1,229 @@
-import { MapPinned, PhoneCall, Siren } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { Badge } from '../components/ui/badge'
-import { Button } from '../components/ui/button'
-import { Card, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-import { fetchEmergencyMatches } from '../services/api'
+import { useState } from "react";
+import { useOutletContext } from "react-router-dom";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { createEmergencyRequest, respondToEmergencyRequest } from "../services/api";
+import { getStatusTone } from "../lib/utils";
 
-const bloodGroups = ['O-', 'O+', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']
+const emergencyDefaults = {
+  bloodGroup: "O-",
+  unitsNeeded: 1,
+  location: "",
+  contactNumber: "",
+  notes: "",
+};
 
-export function EmergencyPage({ fallbackMatches }) {
-  const [bloodGroup, setBloodGroup] = useState('O-')
-  const [matches, setMatches] = useState(fallbackMatches)
-  const [requested, setRequested] = useState(false)
+export function EmergencyPage() {
+  const { role, emergencyFeed, refetch } = useOutletContext();
+  const [form, setForm] = useState(emergencyDefaults);
+  const [submitting, setSubmitting] = useState(false);
+  const [actingId, setActingId] = useState(null);
+  const [matches, setMatches] = useState([]);
 
-  useEffect(() => {
-    let active = true
+  async function handleRequestSubmit(event) {
+    event.preventDefault();
+    setSubmitting(true);
 
-    const loadMatches = async () => {
-      try {
-        const result = await fetchEmergencyMatches(bloodGroup)
-        if (active) setMatches(result)
-      } catch {
-        if (active) setMatches(fallbackMatches)
-      }
+    try {
+      const payload = await createEmergencyRequest({
+        ...form,
+        unitsNeeded: Number(form.unitsNeeded),
+      });
+
+      setMatches(payload.matches);
+      setForm(emergencyDefaults);
+      await refetch();
+    } finally {
+      setSubmitting(false);
     }
+  }
 
-    loadMatches()
+  if (role === "hospital") {
+    return (
+      <div className="space-y-5">
+        <Card className="interactive-surface">
+          <CardHeader>
+            <CardTitle>Emergency Response Queue</CardTitle>
+            <CardDescription>Only requests relevant to your hospital stock appear here. Accepting a request reserves units immediately.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 xl:grid-cols-2">
+            {emergencyFeed.length ? (
+              emergencyFeed.map((request) => (
+                <div key={request.id} className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-strong">
+                        {request.bloodGroup} needed in {request.location}
+                      </p>
+                      <p className="mt-1 text-sm text-muted">
+                        {request.unitsNeeded} units | requested by {request.requesterName}
+                      </p>
+                    </div>
+                    <Badge className={getStatusTone(request.status === "active" ? "critical" : request.status === "accepted" ? "low" : "safe")}>
+                      {request.status}
+                    </Badge>
+                  </div>
 
-    return () => {
-      active = false
-    }
-  }, [bloodGroup, fallbackMatches])
+                  {request.hospitalMatch ? (
+                    <p className="mt-3 text-sm text-muted">
+                      Your stock: {request.hospitalMatch.availableUnits} units | Distance: {request.hospitalMatch.distance ?? "N/A"} km
+                    </p>
+                  ) : null}
+
+                  <p className="mt-3 text-sm text-muted">{request.notes || "No extra clinical notes supplied."}</p>
+
+                  <div className="mt-4 flex gap-3">
+                    {request.status === "active" ? (
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          setActingId(request.id);
+                          try {
+                            await respondToEmergencyRequest(request.id, "accept");
+                            await refetch();
+                          } finally {
+                            setActingId(null);
+                          }
+                        }}
+                        disabled={actingId === request.id}
+                      >
+                        {actingId === request.id ? "Accepting..." : "Accept request"}
+                      </Button>
+                    ) : null}
+
+                    {request.status === "accepted" && request.acceptedByHospitalId ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={async () => {
+                          setActingId(request.id);
+                          try {
+                            await respondToEmergencyRequest(request.id, "complete");
+                            await refetch();
+                          } finally {
+                            setActingId(null);
+                          }
+                        }}
+                        disabled={actingId === request.id}
+                      >
+                        {actingId === request.id ? "Completing..." : "Mark completed"}
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-[24px] border border-white/10 bg-black/20 p-4 text-sm text-muted">
+                No active emergency requests match your current stock.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <Card className="overflow-hidden bg-gradient-to-br from-red-700 via-rose-700 to-red-950 p-0 text-white">
-        <div className="grid gap-6 p-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">
-              <Siren className="size-4" />
-              Emergency Mode
+    <div className="space-y-5">
+      <Card className="interactive-surface">
+        <CardHeader>
+          <CardTitle>Create Emergency Request</CardTitle>
+          <CardDescription>Submit blood group, units, and location. Matching hospitals are returned instantly from live inventory.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+          <form className="space-y-4 rounded-[28px] border border-white/10 bg-black/20 p-5" onSubmit={handleRequestSubmit}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <select
+                value={form.bloodGroup}
+                onChange={(event) => setForm((current) => ({ ...current, bloodGroup: event.target.value }))}
+                className="glass-panel h-11 w-full rounded-2xl border-0 px-4 text-sm text-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+              >
+                {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((group) => (
+                  <option key={group} value={group}>
+                    {group}
+                  </option>
+                ))}
+              </select>
+              <Input
+                type="number"
+                min="1"
+                value={form.unitsNeeded}
+                onChange={(event) => setForm((current) => ({ ...current, unitsNeeded: event.target.value }))}
+                required
+              />
             </div>
-            <h2 className="mt-4 text-3xl font-semibold lg:text-5xl">Critical request orchestration in one tap</h2>
-            <p className="mt-4 max-w-2xl text-base text-rose-50/85">
-              Trigger high-priority routing, surface the nearest viable blood banks, and accelerate dispatch
-              coordination when every minute counts.
-            </p>
-          </div>
-
-          <div className="rounded-[28px] bg-white/10 p-6 backdrop-blur">
-            <p className="text-sm text-rose-100">Select blood group</p>
-            <div className="mt-4 grid grid-cols-4 gap-2">
-              {bloodGroups.map((group) => (
-                <button
-                  key={group}
-                  onClick={() => setBloodGroup(group)}
-                  className={`rounded-2xl px-3 py-3 text-sm font-semibold transition ${
-                    bloodGroup === group ? 'bg-white text-red-700' : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                >
-                  {group}
-                </button>
-              ))}
-            </div>
-            <Button
-              variant="danger"
-              size="lg"
-              className="mt-6 w-full animate-pulseSoft"
-              onClick={() => setRequested(true)}
-            >
-              <Siren className="size-5" />
-              Request Emergency Blood
+            <Input placeholder="Location" value={form.location} onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))} required />
+            <Input placeholder="Contact number" value={form.contactNumber} onChange={(event) => setForm((current) => ({ ...current, contactNumber: event.target.value }))} required />
+            <textarea
+              value={form.notes}
+              onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))}
+              placeholder="Clinical notes"
+              className="glass-panel min-h-28 w-full rounded-2xl border-0 px-4 py-3 text-sm text-strong placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+            />
+            <Button type="submit" disabled={submitting}>
+              {submitting ? "Submitting..." : "Launch emergency request"}
             </Button>
-            {requested ? (
-              <p className="mt-4 rounded-2xl bg-white/10 px-4 py-3 text-sm text-rose-50">
-                Emergency request sent for {bloodGroup}. Dispatch team notified and matching banks prioritized.
-              </p>
-            ) : null}
+          </form>
+
+          <div className="space-y-3">
+            <p className="font-display text-xl font-bold text-strong">Matching Hospitals</p>
+            {(matches.length ? matches : emergencyFeed[0]?.matches ?? []).length ? (
+              (matches.length ? matches : emergencyFeed[0]?.matches ?? []).map((hospital) => (
+                <div key={hospital.id} className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-semibold text-strong">{hospital.name}</p>
+                    <Badge className={getStatusTone(hospital.status)}>{hospital.status}</Badge>
+                  </div>
+                  <p className="mt-2 text-sm text-muted">
+                    {hospital.city} | {hospital.availableUnits} units available
+                    {hospital.distance !== null ? ` | ${hospital.distance} km` : ""}
+                  </p>
+                  <p className="mt-1 text-sm text-muted">{hospital.address}</p>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-[24px] border border-white/10 bg-black/20 p-4 text-sm text-muted">
+                Submit a request to see matching hospitals.
+              </div>
+            )}
           </div>
-        </div>
+        </CardContent>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_1.15fr]">
-        <Card>
-          <CardHeader>
-            <div>
-              <CardDescription>Location intelligence</CardDescription>
-              <CardTitle className="mt-2">Nearest available blood banks</CardTitle>
-            </div>
-          </CardHeader>
-          <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-rose-100 via-white to-rose-50 p-5 dark:from-white/5 dark:via-transparent dark:to-white/5">
-            <div className="absolute inset-0 opacity-60 [background-image:radial-gradient(circle_at_20%_20%,rgba(244,63,94,0.16),transparent_35%),radial-gradient(circle_at_80%_30%,rgba(249,115,22,0.12),transparent_30%),linear-gradient(rgba(255,255,255,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.3)_1px,transparent_1px)] [background-size:auto,auto,42px_42px,42px_42px]" />
-            <div className="relative space-y-4">
-              {matches.slice(0, 3).map((match, index) => (
-                <div
-                  key={match.id}
-                  className={`flex items-center justify-between rounded-[22px] p-4 ${
-                    index === 0 ? 'bg-white shadow-panel dark:bg-white/10' : 'bg-white/70 dark:bg-white/5'
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <MapPinned className="size-4 text-rose-500" />
-                      <p className="font-semibold">{match.name}</p>
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {match.city} · {match.distanceKm} km away
-                    </p>
-                  </div>
-                  <Badge variant={match.status}>{match.units} units</Badge>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Card>
-
-        <div className="space-y-4">
-          {matches.map((match) => (
-            <Card key={match.id}>
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <CardTitle>{match.name}</CardTitle>
-                    <Badge variant={match.status}>{match.status}</Badge>
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {match.city} · {match.distanceKm} km · ETA {match.eta}
+      <Card className="interactive-surface">
+        <CardHeader>
+          <CardTitle>Request Timeline</CardTitle>
+          <CardDescription>Every request stays connected to the live matching engine until a hospital accepts it.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 xl:grid-cols-2">
+          {emergencyFeed.length ? (
+            emergencyFeed.map((request) => (
+              <div key={request.id} className="rounded-[24px] border border-white/10 bg-black/20 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-semibold text-strong">
+                    {request.bloodGroup} request in {request.location}
                   </p>
+                  <Badge className={getStatusTone(request.status === "active" ? "critical" : request.status === "accepted" ? "low" : "safe")}>
+                    {request.status}
+                  </Badge>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="rounded-2xl bg-white/70 px-4 py-3 text-right dark:bg-white/5">
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Available</p>
-                    <p className="text-2xl font-semibold">{match.units} units</p>
-                  </div>
-                  <Button variant="secondary">
-                    <PhoneCall className="size-4" />
-                    {match.contact}
-                  </Button>
-                </div>
+                <p className="mt-2 text-sm text-muted">{request.unitsNeeded} units requested</p>
+                <p className="mt-2 text-sm text-muted">
+                  {request.acceptedHospital
+                    ? `Accepted by ${request.acceptedHospital}`
+                    : `${request.matches.length} hospitals currently match this request.`}
+                </p>
               </div>
-            </Card>
-          ))}
-        </div>
-      </div>
+            ))
+          ) : (
+            <div className="rounded-[24px] border border-white/10 bg-black/20 p-4 text-sm text-muted">
+              You have not created any emergency requests yet.
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
-  )
+  );
 }

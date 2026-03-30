@@ -1,0 +1,299 @@
+[
+  {
+    "name": "All India Institute of Medical Sciences (AIIMS), New Delhi",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "address": "Ansari Nagar, New Delhi, Delhi 110029",
+    "lat": 28.5672,
+    "lng": 77.21,
+    "contact": "+91-11-26588500"
+  },
+  {
+    "name": "Postgraduate Institute of Medical Education and Research (PGIMER)",
+    "city": "Chandigarh",
+    "state": "Chandigarh",
+    "address": "Sector 12, Chandigarh 160012",
+    "lat": 30.7624,
+    "lng": 76.7752,
+    "contact": "+91-172-2747585"
+  },
+  {
+    "name": "Jawaharlal Institute of Postgraduate Medical Education and Research (JIPMER)",
+    "city": "Puducherry",
+    "state": "Puducherry",
+    "address": "JIPMER Campus Road, Dhanvantari Nagar, Gorimedu, Puducherry 605006",
+    "lat": 11.9503,
+    "lng": 79.7997,
+    "contact": "+91-413-2296000"
+  },
+  {
+    "name": "Christian Medical College (CMC) Vellore",
+    "city": "Vellore",
+    "state": "Tamil Nadu",
+    "address": "Ida Scudder Road, Vellore, Tamil Nadu 632004",
+    "lat": 12.9253,
+    "lng": 79.135,
+    "contact": "+91-8000338855"
+  },
+  {
+    "name": "King George's Medical University (KGMU)",
+    "city": "Lucknow",
+    "state": "Uttar Pradesh",
+    "address": "Chowk, Lucknow, Uttar Pradesh 226003",
+    "lat": 26.87,
+    "lng": 80.9155,
+    "contact": "+91-522-2257451"
+  },
+  {
+    "name": "Apollo Hospitals, Greams Road",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "address": "21, Greams Lane, Off Greams Road, Chennai, Tamil Nadu 600006",
+    "lat": 13.0639,
+    "lng": 80.2518,
+    "contact": "+91-44-28290200"
+  },
+  {
+    "name": "Apollo Hospitals, Jubilee Hills",
+    "city": "Hyderabad",
+    "state": "Telangana",
+    "address": "Road No. 72, Jubilee Hills, Hyderabad, Telangana 500033",
+    "lat": 17.4168,
+    "lng": 78.4109,
+    "contact": "+91-40-23607777"
+  },
+  {
+    "name": "Apollo Hospitals, Bannerghatta Road",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "154/11, Bannerghatta Main Road, Bengaluru, Karnataka 560076",
+    "lat": 12.8957,
+    "lng": 77.5995,
+    "contact": "+91-80-26304050"
+  },
+  {
+    "name": "Apollo Multispeciality Hospitals",
+    "city": "Kolkata",
+    "state": "West Bengal",
+    "address": "58, Canal Circular Road, Kadapara, Kolkata, West Bengal 700054",
+    "lat": 22.5317,
+    "lng": 88.3652,
+    "contact": "+91-33-23203040"
+  },
+  {
+    "name": "Apollo Hospitals, CBD Belapur",
+    "city": "Navi Mumbai",
+    "state": "Maharashtra",
+    "address": "Plot 13, Parsik Hill Road, Sector 23, CBD Belapur, Navi Mumbai, Maharashtra 400614",
+    "lat": 19.0171,
+    "lng": 73.039,
+    "contact": "+91-22-33503350"
+  },
+  {
+    "name": "Apollo Hospitals International Limited",
+    "city": "Ahmedabad",
+    "state": "Gujarat",
+    "address": "Plot 1A, Bhat GIDC Estate, Gandhinagar, Gujarat 382428",
+    "lat": 23.1045,
+    "lng": 72.5942,
+    "contact": "+91-79-66701800"
+  },
+  {
+    "name": "Apollo Hospitals, Vijay Nagar",
+    "city": "Indore",
+    "state": "Madhya Pradesh",
+    "address": "Scheme No. 74C, Sector D, Vijay Nagar, Indore, Madhya Pradesh 452010",
+    "lat": 22.7531,
+    "lng": 75.8937,
+    "contact": "+91-731-2445566"
+  },
+  {
+    "name": "Fortis Memorial Research Institute",
+    "city": "Gurugram",
+    "state": "Haryana",
+    "address": "Sector 44, Gurugram, Haryana 122002",
+    "lat": 28.4578,
+    "lng": 77.0721,
+    "contact": "+91-124-4962200"
+  },
+  {
+    "name": "Fortis Escorts Heart Institute",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "address": "Okhla Road, New Delhi, Delhi 110025",
+    "lat": 28.5608,
+    "lng": 77.2733,
+    "contact": "+91-11-47135000"
+  },
+  {
+    "name": "Fortis Hospital, Noida",
+    "city": "Noida",
+    "state": "Uttar Pradesh",
+    "address": "B-22, Sector 62, Noida, Uttar Pradesh 201301",
+    "lat": 28.6272,
+    "lng": 77.3649,
+    "contact": "+91-120-4713500"
+  },
+  {
+    "name": "Fortis Hospital, Mulund",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "Mulund Goregaon Link Road, Mulund West, Mumbai, Maharashtra 400078",
+    "lat": 19.1722,
+    "lng": 72.9562,
+    "contact": "+91-22-67994444"
+  },
+  {
+    "name": "Fortis Hospital, Mohali",
+    "city": "Mohali",
+    "state": "Punjab",
+    "address": "Sector 62, Phase VIII, Mohali, Punjab 160062",
+    "lat": 30.7046,
+    "lng": 76.7176,
+    "contact": "+91-172-4692222"
+  },
+  {
+    "name": "Fortis Hospital, Anandapur",
+    "city": "Kolkata",
+    "state": "West Bengal",
+    "address": "730, Anandapur, EM Bypass Road, Kolkata, West Bengal 700107",
+    "lat": 22.501,
+    "lng": 88.4019,
+    "contact": "+91-33-66284444"
+  },
+  {
+    "name": "Max Super Speciality Hospital, Saket",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "address": "1, 2 Press Enclave Road, Saket, New Delhi, Delhi 110017",
+    "lat": 28.5276,
+    "lng": 77.2167,
+    "contact": "+91-11-26515050"
+  },
+  {
+    "name": "BLK-Max Super Speciality Hospital",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "address": "Pusa Road, Rajinder Nagar, New Delhi, Delhi 110005",
+    "lat": 28.6438,
+    "lng": 77.1893,
+    "contact": "+91-11-30403040"
+  },
+  {
+    "name": "Max Super Speciality Hospital, Vaishali",
+    "city": "Ghaziabad",
+    "state": "Uttar Pradesh",
+    "address": "W-3, Sector 1, Vaishali, Ghaziabad, Uttar Pradesh 201012",
+    "lat": 28.646,
+    "lng": 77.3373,
+    "contact": "+91-120-4173000"
+  },
+  {
+    "name": "Max Super Speciality Hospital, Mohali",
+    "city": "Mohali",
+    "state": "Punjab",
+    "address": "Near Civil Hospital, Chandigarh Road, Phase 6, Mohali, Punjab 160055",
+    "lat": 30.7049,
+    "lng": 76.7185,
+    "contact": "+91-77107-77107"
+  },
+  {
+    "name": "Medanta - The Medicity",
+    "city": "Gurugram",
+    "state": "Haryana",
+    "address": "CH Baktawar Singh Road, Sector 38, Gurugram, Haryana 122001",
+    "lat": 28.4376,
+    "lng": 77.04,
+    "contact": "+91-124-4141414"
+  },
+  {
+    "name": "Sir Ganga Ram Hospital",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "address": "Rajinder Nagar, New Delhi, Delhi 110060",
+    "lat": 28.6381,
+    "lng": 77.1897,
+    "contact": "+91-11-25750000"
+  },
+  {
+    "name": "Kokilaben Dhirubhai Ambani Hospital",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "Four Bungalows, Andheri West, Mumbai, Maharashtra 400053",
+    "lat": 19.1314,
+    "lng": 72.8253,
+    "contact": "+91-22-30999999"
+  },
+  {
+    "name": "Lilavati Hospital and Research Centre",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "A-791, Bandra Reclamation, Bandra West, Mumbai, Maharashtra 400050",
+    "lat": 19.0509,
+    "lng": 72.8296,
+    "contact": "+91-22-26751000"
+  },
+  {
+    "name": "Narayana Institute of Cardiac Sciences",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "Narayana Health City, Bommasandra, Hosur Road, Bengaluru, Karnataka 560099",
+    "lat": 12.8008,
+    "lng": 77.7003,
+    "contact": "+91-80-71222222"
+  },
+  {
+    "name": "Mazumdar Shaw Medical Centre",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "address": "Narayana Health City, Bommasandra, Hosur Road, Bengaluru, Karnataka 560099",
+    "lat": 12.8015,
+    "lng": 77.7009,
+    "contact": "+91-80-71222222"
+  },
+  {
+    "name": "Tata Memorial Hospital",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "address": "Dr. E Borges Road, Parel, Mumbai, Maharashtra 400012",
+    "lat": 19.0036,
+    "lng": 72.842,
+    "contact": "+91-22-24177000"
+  },
+  {
+    "name": "Sanjay Gandhi Postgraduate Institute of Medical Sciences (SGPGIMS)",
+    "city": "Lucknow",
+    "state": "Uttar Pradesh",
+    "address": "Raebareli Road, Lucknow, Uttar Pradesh 226014",
+    "lat": 26.744,
+    "lng": 80.9368,
+    "contact": "+91-522-2494000"
+  },
+  {
+    "name": "Sree Chitra Tirunal Institute for Medical Sciences and Technology (SCTIMST)",
+    "city": "Thiruvananthapuram",
+    "state": "Kerala",
+    "address": "Medical College P.O., Thiruvananthapuram, Kerala 695011",
+    "lat": 8.5217,
+    "lng": 76.9286,
+    "contact": "+91-471-2524444"
+  },
+  {
+    "name": "AIIMS Bhubaneswar",
+    "city": "Bhubaneswar",
+    "state": "Odisha",
+    "address": "Sijua, Patrapada, Bhubaneswar, Odisha 751019",
+    "lat": 20.2648,
+    "lng": 85.813,
+    "contact": "+91-674-2476789"
+  },
+  {
+    "name": "Government Medical College Hospital",
+    "city": "Nagpur",
+    "state": "Maharashtra",
+    "address": "Medical Square, Hanuman Nagar, Nagpur, Maharashtra 440003",
+    "lat": 21.1458,
+    "lng": 79.0945,
+    "contact": "+91-712-2743588"
+  }
+]

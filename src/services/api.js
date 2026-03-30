@@ -1,60 +1,135 @@
-const LOCAL_API = 'http://localhost:4000'
+import { useCallback, useEffect, useState } from "react";
+import { getAccessToken } from "./firebase";
 
-const buildCandidates = (path) => {
-  const configuredBase = import.meta.env.VITE_API_URL
-  const candidates = []
+async function requestJson(path, options = {}) {
+  const token = getAccessToken();
+  const response = await fetch(path, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+    ...options,
+  });
 
-  if (configuredBase) candidates.push(`${configuredBase}${path}`)
-  if (import.meta.env.DEV) candidates.push(path)
-  candidates.push(`${LOCAL_API}${path}`)
+  const payload = await response.json().catch(() => ({}));
 
-  return [...new Set(candidates)]
-}
-
-async function request(path, options) {
-  const candidates = buildCandidates(path)
-  let lastError = null
-
-  for (const url of candidates) {
-    try {
-      const response = await fetch(url, options)
-      if (!response.ok) {
-        lastError = new Error(`API request failed for ${url} with status ${response.status}`)
-        continue
-      }
-
-      return await response.json()
-    } catch (error) {
-      lastError = error
-    }
+  if (!response.ok) {
+    throw new Error(payload.message || `Request failed with status ${response.status}`);
   }
 
-  throw lastError || new Error(`API request failed for ${path}`)
+  return payload;
 }
 
-export async function fetchDashboardData() {
-  return request('/api/dashboard')
+export function useCommandCenter() {
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchData = useCallback(async ({ silent = false } = {}) => {
+    if (silent) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
+
+    try {
+      const payload = await requestJson("/api/command-center");
+      setData(payload);
+      setError(null);
+    } catch (fetchError) {
+      setError(fetchError);
+    } finally {
+      if (silent) {
+        setIsRefreshing(false);
+      } else {
+        setIsLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      fetchData({ silent: true });
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, [fetchData]);
+
+  return { data, isLoading, isRefreshing, error, refetch: fetchData };
 }
 
-export async function fetchHospitals(search = '', status = 'all') {
-  const query = new URLSearchParams({ search, status })
-  return request(`/api/hospitals?${query.toString()}`)
+export function fetchHospitals() {
+  return requestJson("/api/hospitals");
 }
 
-export async function fetchEmergencyMatches(group) {
-  return request(`/api/emergency?group=${encodeURIComponent(group)}`)
+export function fetchNearbyHospitals({ lat, lng, limit = 8 }) {
+  const params = new URLSearchParams({
+    lat: String(lat),
+    lng: String(lng),
+    limit: String(limit),
+  });
+  return requestJson(`/api/hospitals/nearby?${params.toString()}`);
 }
 
-export async function fetchDonors(group = 'all') {
-  return request(`/api/donors?group=${encodeURIComponent(group)}`)
+export function updateInventory(id, units) {
+  return requestJson(`/api/inventory/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ units: Number(units) }),
+  });
 }
 
-export async function updateHospitalInventory(hospitalId, inventory) {
-  return request(`/api/hospitals/${hospitalId}/inventory`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ inventory }),
-  })
+export function clearInventory(id) {
+  return requestJson(`/api/inventory/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function fetchDonors(query = "") {
+  const params = new URLSearchParams();
+
+  if (query) {
+    params.set("q", query);
+  }
+
+  return requestJson(`/api/donors${params.toString() ? `?${params.toString()}` : ""}`);
+}
+
+export function createDonor(payload) {
+  return requestJson("/api/donors", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateDonor(id, payload) {
+  return requestJson(`/api/donors/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteDonor(id) {
+  return requestJson(`/api/donors/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function createEmergencyRequest(payload) {
+  return requestJson("/api/emergency-requests", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function respondToEmergencyRequest(id, action) {
+  return requestJson(`/api/emergency-requests/${id}/respond`, {
+    method: "POST",
+    body: JSON.stringify({ action }),
+  });
 }

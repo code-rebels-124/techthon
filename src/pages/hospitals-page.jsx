@@ -1,145 +1,119 @@
-import { Search, SlidersHorizontal } from 'lucide-react'
-import { startTransition, useDeferredValue, useEffect, useMemo, useState } from 'react'
-import { Badge } from '../components/ui/badge'
-import { Card, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-import { Input } from '../components/ui/input'
-import { fetchHospitals } from '../services/api'
+import { Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useOutletContext } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Badge } from "../components/ui/badge";
+import { getStatusTone } from "../lib/utils";
 
-const filters = ['all', 'safe', 'low', 'critical']
+export function HospitalsPage() {
+  const { hospitals, isLoading } = useOutletContext();
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [bloodGroup, setBloodGroup] = useState("all");
 
-export function HospitalsPage({ fallbackHospitals }) {
-  const [query, setQuery] = useState('')
-  const [status, setStatus] = useState('all')
-  const safeFallbackHospitals = useMemo(
-    () => (Array.isArray(fallbackHospitals) ? fallbackHospitals : []),
-    [fallbackHospitals],
-  )
-  const [hospitals, setHospitals] = useState(safeFallbackHospitals)
-  const deferredQuery = useDeferredValue(query)
-
-  useEffect(() => {
-    let active = true
-
-    const loadHospitals = async () => {
-      try {
-        const result = await fetchHospitals(deferredQuery, status)
-        if (active) setHospitals(Array.isArray(result) ? result : safeFallbackHospitals)
-      } catch {
-        if (active) {
-          const localResults = safeFallbackHospitals.filter((hospital) => {
-            const matchesSearch =
-              hospital.name.toLowerCase().includes(deferredQuery.toLowerCase()) ||
-              hospital.city.toLowerCase().includes(deferredQuery.toLowerCase())
-            const matchesStatus = status === 'all' ? true : hospital.status === status
-            return matchesSearch && matchesStatus
-          })
-
-          setHospitals(localResults)
-        }
-      }
-    }
-
-    loadHospitals()
-
-    return () => {
-      active = false
-    }
-  }, [deferredQuery, safeFallbackHospitals, status])
+  const filtered = useMemo(() => {
+    return hospitals.filter((hospital) => {
+      const safeHospital = {
+        name: hospital?.name ?? "",
+        city: hospital?.city ?? "",
+        state: hospital?.state ?? "",
+        inventory: Array.isArray(hospital?.inventory) ? hospital.inventory : [],
+        status: hospital?.status ?? "safe",
+      };
+      const inventoryText = safeHospital.inventory.map((item) => `${item.bloodGroup} ${item.units}`).join(" ");
+      const matchesQuery =
+        safeHospital.name.toLowerCase().includes(query.toLowerCase()) ||
+        safeHospital.city.toLowerCase().includes(query.toLowerCase()) ||
+        safeHospital.state.toLowerCase().includes(query.toLowerCase()) ||
+        inventoryText.toLowerCase().includes(query.toLowerCase());
+      const matchesFilter = filter === "all" ? true : safeHospital.status === filter;
+      const selectedStock =
+        bloodGroup === "all" ? null : safeHospital.inventory.find((item) => item.bloodGroup === bloodGroup);
+      const matchesGroup = bloodGroup === "all" ? true : (selectedStock?.units ?? 0) > 0;
+      return matchesQuery && matchesFilter && matchesGroup;
+    });
+  }, [bloodGroup, filter, hospitals, query]);
 
   return (
-    <div className="space-y-6">
-      <Card className="overflow-hidden">
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+    <div className="space-y-5">
+      <Card className="interactive-surface">
+        <CardHeader className="flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Network visibility</p>
-            <h2 className="mt-3 text-3xl font-semibold">Hospitals and blood banks</h2>
-            <p className="mt-3 max-w-2xl text-muted-foreground">
-              Search across partner hospitals, watch reserve health in real time, and identify where
-              support is needed before shortages cascade.
-            </p>
+            <CardTitle>Registered Hospitals</CardTitle>
+            <CardDescription>New hospitals appear here automatically after registration, with live stock summaries drawn from the shared backend store.</CardDescription>
           </div>
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-4 top-3.5 size-4 text-muted-foreground" />
-              <Input
-                value={query}
-                onChange={(event) => {
-                  const nextQuery = event.target.value
-                  startTransition(() => setQuery(nextQuery))
-                }}
-                placeholder="Search hospitals or cities"
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative min-w-[260px]">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+              <Input value={query} onChange={(event) => setQuery(event.target.value)} className="pl-10" placeholder="Search by hospital, city, blood group..." />
             </div>
-            <div className="flex items-center gap-2 rounded-full border border-white/70 bg-white/70 px-4 dark:border-white/10 dark:bg-white/5">
-              <SlidersHorizontal className="size-4 text-muted-foreground" />
-              <select
-                value={status}
-                onChange={(event) => setStatus(event.target.value)}
-                className="bg-transparent py-3 text-sm outline-none"
-              >
-                {filters.map((filter) => (
-                  <option key={filter} value={filter}>
-                    {filter}
-                  </option>
-                ))}
-              </select>
+            <select
+              value={bloodGroup}
+              onChange={(event) => setBloodGroup(event.target.value)}
+              className="glass-panel h-11 rounded-2xl border-0 px-4 text-sm text-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+            >
+              <option value="all">All blood groups</option>
+              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((group) => (
+                <option key={group} value={group}>
+                  {group}
+                </option>
+              ))}
+            </select>
+            <div className="glass-panel flex rounded-2xl p-1">
+              {["all", "safe", "low", "critical"].map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setFilter(option)}
+                  className={`rounded-2xl px-4 py-2 text-sm font-semibold capitalize transition ${
+                    filter === option ? "bg-rose-500 text-white" : "text-muted"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
             </div>
           </div>
-        </div>
+        </CardHeader>
       </Card>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        {hospitals.map((hospital) => (
-          <Card key={hospital.id}>
-            <CardHeader>
-              <div>
-                <CardDescription>
-                  {hospital.city} · {hospital.type}
-                </CardDescription>
-                <CardTitle className="mt-2">{hospital.name}</CardTitle>
-              </div>
-              <Badge variant={hospital.status}>{hospital.status}</Badge>
-            </CardHeader>
-            <div className="grid gap-4 md:grid-cols-[1fr_auto]">
-              <div className="grid grid-cols-2 gap-3">
-                {hospital.inventory.map((item) => (
-                  <div
-                    key={`${hospital.id}-${item.group}`}
-                    className="rounded-[20px] border border-white/70 bg-white/65 p-3 dark:border-white/10 dark:bg-white/5"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">{item.group}</span>
-                      <Badge variant={item.units <= item.threshold ? 'critical' : item.units <= item.threshold * 1.35 ? 'low' : 'safe'}>
-                        {item.units}u
-                      </Badge>
+        {isLoading
+          ? Array.from({ length: 4 }).map((_, index) => <Card key={index} className="h-60 animate-pulse" />)
+          : filtered.map((hospital) => (
+              <Card key={hospital.id} className="interactive-surface">
+                <CardContent className="p-6">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <p className="font-display text-2xl font-bold text-strong">{hospital.name}</p>
+                        <Badge className={getStatusTone(hospital.status)}>{hospital.status}</Badge>
+                      </div>
+                      <p className="mt-2 text-sm text-muted">
+                        {hospital.city}, {hospital.state ?? "Unknown"} | {hospital.hospitalType ?? hospital.type ?? "Hospital"}
+                      </p>
+                      <p className="mt-1 text-sm text-muted">{hospital.address}</p>
+                      <p className="mt-1 text-sm text-muted">Contact: {hospital.contactPhone || hospital.contactEmail || "N/A"}</p>
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground">Expires in {item.expiryDays} days</p>
+                    <div className="rounded-2xl bg-white/60 px-4 py-3 text-right text-sm dark:bg-white/6">
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted">Total stock</p>
+                      <p className="mt-1 font-display text-2xl font-bold text-strong">{hospital.totalUnits}</p>
+                    </div>
                   </div>
-                ))}
-              </div>
 
-              <div className="rounded-[24px] bg-gradient-to-b from-rose-500 to-red-500 p-5 text-white">
-                <p className="text-sm text-rose-100">Total reserve</p>
-                <p className="mt-3 text-4xl font-semibold">{hospital.totalUnits}</p>
-                <div className="mt-5 space-y-2 text-sm text-rose-50/90">
-                  <p>{hospital.distanceKm} km away</p>
-                  <p>{hospital.nearExpiryCount} groups near expiry</p>
-                  <p>Updated {new Date(hospital.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        ))}
+                  <div className="mt-6 grid grid-cols-4 gap-3 sm:grid-cols-8">
+                    {hospital.inventory.map((item) => (
+                      <div key={`${hospital.id}-${item.bloodGroup}`} className="rounded-2xl bg-white/60 p-3 text-center dark:bg-white/6">
+                        <p className="font-display text-base font-bold text-strong">{item.bloodGroup}</p>
+                        <p className="mt-2 text-sm font-semibold text-rose-400">{item.units}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
       </div>
-
-      {hospitals.length === 0 ? (
-        <Card>
-          <p className="text-sm text-muted-foreground">
-            Hospital data is unavailable right now. Start the LifeFlow API and refresh the page.
-          </p>
-        </Card>
-      ) : null}
     </div>
-  )
+  );
 }

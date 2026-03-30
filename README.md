@@ -1,88 +1,137 @@
-# LifeFlow - Smart Blood Supply Management System
+# LifeFlow - Blood Bank Management System
 
-LifeFlow is a modern healthcare operations dashboard for monitoring blood inventory, predicting demand, and recommending redistribution between hospitals and blood banks.
-
-## Stack
-
-- React + Vite
-- Tailwind CSS
-- Reusable shadcn-style UI primitives
-- Node.js + Express
-- Recharts
-- Framer Motion
-- Lucide React
-- Firebase Authentication + Firestore
+LifeFlow is a full-stack Blood Bank Management System built for hospital operations and emergency coordination.
+It includes hospital-based login, blood inventory tracking, donor management, emergency request handling, and a futuristic dashboard UI for hackathons and demos.
 
 ## Features
 
-- Premium dashboard with glassmorphism cards, gradients, and animated counters
-- Real-time style blood inventory monitoring across all major blood groups
-- Critical stock and near-expiry alerts
-- Demand trend visualization and prediction summaries
-- Redistribution recommendations between hospitals
-- Hospitals and blood banks directory with search and status filters
-- Emergency mode with nearest blood bank suggestions
-- Role-based authentication for hospitals and consumers
-- Firebase-ready auth with a built-in demo fallback mode
-- Consumer dashboard with donor finder and emergency shortcuts
-- Dark mode toggle and alerts inbox
-- Mock backend API ready for Firebase or MongoDB integration later
+- `Hospital-based login` with hospital-specific data access
+- `Blood inventory management` for all major blood groups
+- `Donor management` with add, update, delete, and search
+- `Emergency request system` with matching and hospital response flow
+- `Real-time style sync` using periodic refresh
+- `Graphs & analytics` for blood stock, donation trends, and emergency demand
 
-## Project structure
+## Tech Stack
 
-- `src/components` reusable UI and dashboard modules
-- `src/pages` routed application screens
-- `src/context` auth state and role management
-- `src/routes` protected route guards
-- `src/services` API layer
-- `src/data` frontend fallback data
-- `src/utils` helpers
-- `server` Express API and mock analytics engine
+- `Frontend:` React, Tailwind CSS, Framer Motion
+- `Backend:` Node.js, Express
+- `Database:` MongoDB
+- `Charts:` Recharts
 
-## Getting started
+## Project Structure
 
-1. Install dependencies:
+```text
+smart_blood/
+├── public/
+├── server/
+│   ├── data/
+│   │   ├── hospitals.json
+│   │   └── store.json
+│   ├── db.js
+│   ├── fallback-server.js
+│   ├── index.js
+│   ├── load-env.js
+│   ├── models.js
+│   ├── seed.js
+│   ├── security.js
+│   ├── services.js
+│   └── store.js
+├── src/
+│   ├── components/
+│   ├── context/
+│   ├── data/
+│   ├── lib/
+│   ├── pages/
+│   ├── routes/
+│   ├── services/
+│   ├── utils/
+│   ├── App.jsx
+│   ├── index.css
+│   └── main.jsx
+├── .env
+├── .env.example
+├── index.html
+├── package.json
+├── vite.config.js
+└── README.md
+```
+
+## Installation & Setup
+
+### 1. Clone the repository
+
+```bash
+git clone <your-repo-url>
+cd smart_blood
+```
+
+### 2. Install dependencies
 
 ```bash
 npm install
 ```
 
-2. Create an environment file:
+### 3. Setup environment variables
 
-```bash
-cp .env.example .env
+Create a `.env` file in the project root:
+
+```env
+MONGO_URI=mongodb://127.0.0.1:27017/lifeflow
+JWT_SECRET=your-super-secret-key
+PORT=4000
 ```
 
-3. Add your Firebase web app credentials to `.env`.
+### 4. Seed the database
 
-If you skip Firebase credentials, LifeFlow still works in demo mode using local demo accounts.
+```bash
+npm run seed
+```
 
-4. Start frontend and backend together:
+### 5. Run the project
 
 ```bash
 npm run dev
 ```
 
-5. Open the Vite app URL shown in the terminal. API requests use `VITE_API_URL` and fall back to `http://localhost:4000`.
+### 6. Open the app
 
-## Demo users
+```text
+http://localhost:5173
+```
 
-- `hospital@test.com` / `123456`
-- `user@test.com` / `123456`
+## Environment Variables
 
-These work instantly in demo mode and keep the auth flow functional even before Firebase credentials are added.
+- `MONGO_URI` - MongoDB connection string
+- `JWT_SECRET` - JWT signing secret
+- `PORT` - backend server port
 
-## Scripts
+## Available Scripts
 
-- `npm run dev` starts Vite and Express together
-- `npm run client` starts only the Vite frontend
-- `npm run server` starts only the Express backend
-- `npm run build` builds the frontend for production
-- `npm run preview` previews the production build
+```bash
+npm run dev
+npm run dev:client
+npm run dev:server
+npm run seed
+npm run build
+```
 
-## Next upgrades
+## Demo
 
-- Persist hospital inventory updates fully in Firestore
-- Swap mock analytics data for Firestore or MongoDB
-- Integrate live location tracking for emergency routing
-- Add donor operations and audit logging
+Demo Video: [Add Google Drive Link Here]
+
+## Screenshots
+
+- Add login screen screenshot here
+- Add dashboard screenshot here
+- Add emergency request screen screenshot here
+
+## Future Improvements
+
+- AI-based blood demand prediction
+- SMS/Email notifications
+- Live blood transport tracking
+
+## Author
+
+- `Your Name Here`

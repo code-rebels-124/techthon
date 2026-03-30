@@ -1,32 +1,30 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { Skeleton } from '../components/ui/skeleton'
+import { Navigate, Outlet, useLocation, useOutletContext } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { getHomeRoute } from "../utils/role-routes";
 
-export function ProtectedRoute({ allowedRoles = [] }) {
-  const { currentUser, role, loading } = useAuth()
-  const location = useLocation()
+export function ProtectedRoute({ allowedRoles }) {
+  const { currentUser, role, loading } = useAuth();
+  const location = useLocation();
+  const outletContext = useOutletContext();
 
   if (loading) {
     return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-12 w-56" />
-        <Skeleton className="h-64 rounded-[32px]" />
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Skeleton className="h-40" />
-          <Skeleton className="h-40" />
-          <Skeleton className="h-40" />
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="glass-panel rounded-[28px] px-8 py-6 text-center">
+          <p className="font-display text-2xl font-bold text-strong">Preparing secure session...</p>
+          <p className="mt-2 text-sm text-muted">Checking authentication and dashboard access.</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!currentUser) {
-    return <Navigate to="/login" replace state={{ from: location }} />
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-    return <Navigate to={role === 'hospital' ? '/hospital' : '/consumer'} replace />
+  if (allowedRoles && !allowedRoles.includes(role)) {
+    return <Navigate to={getHomeRoute(role)} replace />;
   }
 
-  return <Outlet />
+  return <Outlet context={outletContext} />;
 }

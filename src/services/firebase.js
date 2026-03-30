@@ -1,20 +1,111 @@
-import { getApp, getApps, initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+const TOKEN_KEY = "lifeflow-access-token";
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+function getToken() {
+  return typeof window === "undefined" ? null : window.localStorage.getItem(TOKEN_KEY);
 }
 
-const hasFirebaseConfig = Object.values(firebaseConfig).every(Boolean)
+function setToken(token) {
+  if (typeof window === "undefined") {
+    return;
+  }
 
-const app = hasFirebaseConfig ? (getApps().length ? getApp() : initializeApp(firebaseConfig)) : null
-const auth = app ? getAuth(app) : null
-const db = app ? getFirestore(app) : null
+  if (token) {
+    window.localStorage.setItem(TOKEN_KEY, token);
+  } else {
+    window.localStorage.removeItem(TOKEN_KEY);
+  }
+}
 
-export { app, auth, db, firebaseConfig, hasFirebaseConfig }
+async function requestJson(path, options = {}) {
+  const token = getToken();
+  const response = await fetch(path, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+    ...options,
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(payload.message || `Request failed with status ${response.status}`);
+  }
+
+  return payload;
+}
+
+export async function registerWithEmail(payload) {
+  const session = await requestJson("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  setToken(session.token);
+  return { user: { uid: session.profile.id, email: session.profile.email }, profile: session.profile };
+}
+
+export async function loginWithEmail(payload) {
+  const session = await requestJson("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  setToken(session.token);
+  return { user: { uid: session.profile.id, email: session.profile.email }, profile: session.profile };
+}
+
+export async function logoutCurrentUser() {
+  setToken(null);
+}
+
+export function subscribeToAuthChange(callback) {
+  let active = true;
+
+  async function hydrateSession() {
+    const token = getToken();
+
+    if (!token) {
+      callback(null);
+      return;
+    }
+
+    try {
+      const payload = await requestJson("/api/auth/me");
+
+      if (!active) {
+        return;
+      }
+
+      callback({
+        user: { uid: payload.profile.id, email: payload.profile.email },
+        profile: payload.profile,
+      });
+    } catch {
+      setToken(null);
+      if (active) {
+        callback(null);
+      }
+    }
+  }
+
+  hydrateSession();
+
+  const handleStorage = (event) => {
+    if (event.key === TOKEN_KEY) {
+      hydrateSession();
+    }
+  };
+
+  window.addEventListener("storage", handleStorage);
+
+  return () => {
+    active = false;
+    window.removeEventListener("storage", handleStorage);
+  };
+}
+
+export function getAccessToken() {
+  return getToken();
+}
