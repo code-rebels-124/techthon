@@ -8,7 +8,9 @@
     "dev:client": "vite",
     "dev:server": "node server/index.js",
     "build": "vite build",
+    "render-build": "npm run build",
     "preview": "vite preview",
+    "start": "node server/index.js",
     "server": "node server/index.js",
     "seed": "node server/seed.js"
   },

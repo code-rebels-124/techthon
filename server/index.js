@@ -1,6 +1,9 @@
 import "./load-env.js";
 import cors from "cors";
 import express from "express";
+import path from "path";
+import { existsSync } from "fs";
+import { fileURLToPath } from "url";
 import { startFallbackServer } from "./fallback-server.js";
 import { connectDatabase } from "./db.js";
 import jwt from "jsonwebtoken";
@@ -25,9 +28,31 @@ const app = express();
 const port = Number(process.env.PORT || 4000);
 const jwtSecret = process.env.JWT_SECRET || "replace-this-secret";
 const tokenTtl = process.env.TOKEN_TTL_HOURS || "12h";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const distPath = path.resolve(__dirname, "..", "dist");
+const hasBuiltFrontend = existsSync(distPath);
 
 app.use(cors());
 app.use(express.json());
+
+function configureStaticHosting() {
+  if (!hasBuiltFrontend) {
+    return;
+  }
+
+  app.use(express.static(distPath));
+
+  app.get("/", (_request, response) => response.sendFile(path.join(distPath, "index.html")));
+
+  app.get("/{*splat}", (request, response, next) => {
+    if (request.path.startsWith("/api")) {
+      return next();
+    }
+
+    return response.sendFile(path.join(distPath, "index.html"));
+  });
+}
 
 function createToken(account) {
   return jwt.sign({ sub: String(account._id), role: account.role, email: account.email }, jwtSecret, { expiresIn: tokenTtl });
@@ -163,6 +188,7 @@ function registerMongoRoutes() {
     response.json({ item: { id: String(emergencyRequest._id), status: emergencyRequest.status } });
   });
 
+  configureStaticHosting();
   app.listen(port, () => console.log(`LifeFlow API running on http://localhost:${port} (mongo mode)`));
 }
 
@@ -172,5 +198,6 @@ connectDatabase()
   })
   .catch(async (error) => {
     console.warn(`MongoDB unavailable (${error.message}). Falling back to local datastore.`);
+    configureStaticHosting();
     await startFallbackServer(app, { port, jwtSecret });
   });

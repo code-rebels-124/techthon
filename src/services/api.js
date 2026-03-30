@@ -1,9 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { getAccessToken } from "./firebase";
 
+const apiBaseUrl = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+
+function buildApiUrl(path) {
+  if (!apiBaseUrl) {
+    return path;
+  }
+
+  return `${apiBaseUrl}${path}`;
+}
+
 async function requestJson(path, options = {}) {
   const token = getAccessToken();
-  const response = await fetch(path, {
+  const response = await fetch(buildApiUrl(path), {
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

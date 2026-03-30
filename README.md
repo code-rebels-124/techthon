@@ -265,6 +265,7 @@ APP_NAME=LifeFlow
 APP_REGION=India
 NODE_ENV=development
 APP_MODE=local
+VITE_API_URL=
 
 MONGO_URI=mongodb://127.0.0.1:27017/lifeflow
 PORT=4000
@@ -283,6 +284,7 @@ DEMO_REQUESTER_PASSWORD=123456
 Notes:
 
 - `MONGO_URI` is used only when Mongo mode is available.
+- `VITE_API_URL` can be left empty for same-origin hosting
 - if MongoDB is unavailable, the app falls back automatically to local datastore mode
 - `.env.example` is the safe template
 - `.env` contains your local runtime values
@@ -322,6 +324,41 @@ Default URLs:
 
 - frontend: `http://localhost:5173`
 - backend: `http://localhost:4000`
+
+## Render Deployment
+
+LifeFlow is now prepared for single-service hosting on Render.
+
+Recommended Render setup:
+
+- Service type: `Web Service`
+- Build command: `npm install && npm run render-build`
+- Start command: `npm start`
+
+Why this works:
+
+- Render builds the Vite frontend into `dist`
+- Express serves the built frontend in production
+- API routes stay under `/api/*`
+- React routes fall back to `dist/index.html`
+
+Recommended environment variables on Render:
+
+```env
+NODE_ENV=production
+PORT=10000
+JWT_SECRET=your-long-random-secret
+MONGO_URI=your-render-mongodb-uri
+TOKEN_TTL_HOURS=24h
+VITE_API_URL=
+```
+
+Notes for Render:
+
+- leave `VITE_API_URL` empty if frontend and backend are hosted in the same Render web service
+- if you later split frontend and backend into separate services, set `VITE_API_URL` to the backend service URL
+- if MongoDB is not reachable, the app still boots in fallback mode using the local datastore
+- for persistent production data, MongoDB is strongly recommended over fallback mode
 
 ## Seeding Data
 
