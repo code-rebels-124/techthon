@@ -325,6 +325,10 @@ Default URLs:
 - frontend: `http://localhost:5173`
 - backend: `http://localhost:4000`
 
+## Demo Video
+
+- Demo Video: [Watch here](https://drive.google.com/file/d/1i1lHJKWDuknjAB8vUpcL65bEPveasG6c/view)
+
 ## Render Deployment
 
 LifeFlow is now prepared for single-service hosting on Render.
